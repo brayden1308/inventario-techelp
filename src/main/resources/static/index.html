@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario - TechHelp</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 30px;
+          background-color: #f4f4f4;
+        }
+
+        h1 {
+          color: #3498db;
+          text-align: center;
+        }
+
+        form {
+          background: white;
+          padding: 20px;
+          border-radius: 8px;
+          margin-bottom: 20px;
+        }
+
+        input, select, button {
+          margin: 5px 0;
+          padding: 8px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        table {
+          width: 100%;
+          background: white;
+          border-collapse: collapse;
+          margin-top: 10px;
+        }
+
+        th, td {
+          padding: 10px;
+          border: 1px solid #ccc;
+          text-align: left;
+        }
+
+        th {
+          background: #3498db;
+          color: white;
+        }
+
+        .low-stock {
+          background-color: #ffe5e5;
+        }
+
+        .botones {
+          display: flex;
+          justify-content: space-between;
+          gap: 10px;
+          margin-top: 20px;
+        }
+
+        .botones button {
+          width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Inventario - TechHelp</h1>
+
+<form id="producto-form">
+    <input type="text" id="nombre" placeholder="Nombre del producto" required />
+    <input type="text" id="descripcion" placeholder="Descripción" />
+    <input type="number" id="precio" placeholder="Precio" required />
+    <input type="text" id="categoria" placeholder="Categoría" required />
+    <input type="number" id="stock" placeholder="Stock" required />
+    <button type="submit">Guardar Producto</button>
+</form>
+
+<input type="text" id="buscar" placeholder="Buscar por nombre o categoría" />
+
+<table>
+    <thead>
+    <tr>
+        <th>Nombre</th>
+        <th>Categoría</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <th>Acciones</th>
+    </tr>
+    </thead>
+    <tbody id="tabla-productos"></tbody>
+</table>
+
+<div class="botones">
+    <button onclick="exportarPDF()">Exportar PDF</button>
+    <button onclick="mostrarProductos()">Actualizar Tabla</button>
+</div>
+
+<script>
+    let productos = [];
+    let editandoIndex = -1;
+
+    window.onload = mostrarProductos;
+
+    document.getElementById('producto-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const nombre = document.getElementById('nombre').value;
+      const descripcion = document.getElementById('descripcion').value;
+      const precio = parseFloat(document.getElementById('precio').value);
+      const categoria = document.getElementById('categoria').value;
+      const stock = parseInt(document.getElementById('stock').value);
+      const nuevoProducto = { nombre, descripcion, precio, categoria, stock };
+
+      if (editandoIndex >= 0) {
+        fetch(`https://inventario-techhelp.onrender.com/api/productos/${productos[editandoIndex].id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(nuevoProducto)
+        })
+        .then(response => response.json())
+        .then(data => {
+          productos[editandoIndex] = data;
+          editandoIndex = -1;
+          mostrarProductos();
+          this.reset();
+        })
+        .catch(error => console.error('Error:', error));
+      } else {
+        fetch('https://inventario-techhelp.onrender.com/api/productos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(nuevoProducto)
+        })
+        .then(response => response.json())
+        .then(data => {
+          productos.push(data);
+          mostrarProductos();
+          this.reset();
+        })
+        .catch(error => console.error('Error:', error));
+      }
+    });
+
+    document.getElementById('buscar').addEventListener('input', mostrarProductos);
+
+    function mostrarProductos() {
+      const tbody = document.getElementById('tabla-productos');
+      const filtro = document.getElementById('buscar').value.toLowerCase();
+      tbody.innerHTML = '';
+
+      fetch('https://inventario-techhelp.onrender.com/api/productos')
+        .then(response => response.json())
+        .then(data => {
+          productos = data;
+          productos.forEach((prod, index) => {
+            if (
+              prod.nombre.toLowerCase().includes(filtro) ||
+              prod.categoria.toLowerCase().includes(filtro)
+            ) {
+              const tr = document.createElement('tr');
+              if (prod.stock < 5) tr.classList.add('low-stock');
+
+              tr.innerHTML = `
+                <td>${prod.nombre}</td>
+                <td>${prod.categoria}</td>
+                <td>$${prod.precio.toFixed(2)}</td>
+                <td>${prod.stock}</td>
+                <td>
+                  <button onclick="editarProducto(${prod.id})">Editar</button>
+                  <button onclick="eliminarProducto(${prod.id})">Eliminar</button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            }
+          });
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function eliminarProducto(id) {
+      if (confirm("¿Eliminar este producto?")) {
+        fetch(`https://inventario-techhelp.onrender.com/api/productos/${id}`, {
+          method: 'DELETE',
+        })
+        .then(response => {
+          if (response.ok) {
+            productos = productos.filter(prod => prod.id !== id);
+            mostrarProductos();
+          } else {
+            console.error('Error al eliminar el producto');
+          }
+        })
+        .catch(error => console.error('Error:', error));
+      }
+    }
+
+    function editarProducto(id) {
+      const prod = productos.find(p => p.id === id);
+      if (!prod) return;
+      document.getElementById('nombre').value = prod.nombre;
+      document.getElementById('descripcion').value = prod.descripcion;
+      document.getElementById('precio').value = prod.precio;
+      document.getElementById('categoria').value = prod.categoria;
+      document.getElementById('stock').value = prod.stock;
+      editandoIndex = productos.findIndex(p => p.id === id);
+    }
+
+    function exportarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("Inventario - TEECH HELP", 10, 10);
+
+      const rows = productos.map(p => [
+        p.nombre,
+        p.categoria,
+        "$" + p.precio.toFixed(2),
+        p.stock
+      ]);
+
+      doc.autoTable({
+        head: [["Nombre", "Categoría", "Precio", "Stock"]],
+        body: rows,
+        startY: 20
+      });
+
+      doc.save("inventario.pdf");
+    }
+</script>
+</body>
+</html>
