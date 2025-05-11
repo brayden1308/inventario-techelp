@@ -1,4 +1,4 @@
-package com.teechhelp.inventario.model;
+package model;
 
 import jakarta.persistence.*;
 

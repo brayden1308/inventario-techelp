@@ -1,6 +1,6 @@
-package com.teechhelp.inventario.repository;
+package repository;
 
-import com.teechhelp.inventario.model.Producto;
+import model.Producto;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProductoRepository extends JpaRepository<Producto, Long> {

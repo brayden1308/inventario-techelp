@@ -1,12 +1,11 @@
-package com.teechhelp.inventario; // Asegúrate de que este paquete sea correcto
+package com.teechhelp.inventario;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication // Esta anotación habilita la configuración automática de Spring Boot
+@SpringBootApplication
 public class InventarioApplication {
-
 	public static void main(String[] args) {
-		SpringApplication.run(InventarioApplication.class, args); // Inicia la aplicación
+		SpringApplication.run(InventarioApplication.class, args);
 	}
 }

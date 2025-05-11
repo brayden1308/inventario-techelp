@@ -1,7 +1,7 @@
-package com.teechhelp.inventario.controller;
+package controller;
 
-import com.teechhelp.inventario.model.Producto;
-import com.teechhelp.inventario.repository.ProductoRepository;
+import model.Producto;
+import repository.ProductoRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
