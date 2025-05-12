@@ -24,26 +24,27 @@
 	</properties>
 
 	<dependencies>
-		<!-- Web (controladores REST) -->
+		<!-- Web (API REST) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
-		<!-- JPA (persistencia con H2) -->
+		<!-- JPA (Persistencia) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
-		<!-- H2 (base de datos local persistente o en memoria) -->
+		<!-- PostgreSQL JDBC Driver (Supabase) -->
 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.7.3</version>
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- Seguridad (para habilitar acceso a /h2-console) -->
+		<!-- Seguridad (si usas /h2-console o protecciones futuras) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>

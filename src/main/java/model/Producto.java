@@ -1,9 +1,11 @@
-package model;
+package com.teechhelp.inventario.model;
 
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "producto")
 public class Producto {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -13,6 +15,24 @@ public class Producto {
     private double precio;
     private String categoria;
     private int stock;
+
+    // Getters y setters
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
     public String getDescripcion() {
         return descripcion;
@@ -45,21 +65,4 @@ public class Producto {
     public void setStock(int stock) {
         this.stock = stock;
     }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-// Getters y Setters (puedes generarlos con Alt + Insert)
 }

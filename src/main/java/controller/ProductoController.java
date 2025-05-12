@@ -1,41 +1,47 @@
 package controller;
 
-import model.Producto;
-import repository.ProductoRepository;
+import com.teechhelp.inventario.model.Producto;
+import com.teechhelp.inventario.repository.ProductoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/productos")
-@CrossOrigin("*")
 public class ProductoController {
 
-    private final ProductoRepository repository;
+    @Autowired
+    private ProductoRepository productoRepository;
 
-    public ProductoController(ProductoRepository repository) {
-        this.repository = repository;
+    @PostMapping
+    public Producto crearProducto(@RequestBody Producto producto) {
+        return productoRepository.save(producto);
     }
 
     @GetMapping
-    public List<Producto> listar() {
-        return repository.findAll();
-    }
-
-    @PostMapping
-    public Producto guardar(@RequestBody Producto producto) {
-        return repository.save(producto);
-    }
-
-    @PutMapping("/{id}")
-    public Producto actualizar(@PathVariable Long id, @RequestBody Producto producto) {
-        producto.setId(id);
-        return repository.save(producto);
+    public List<Producto> listarProductos() {
+        return productoRepository.findAll();
     }
 
     @DeleteMapping("/{id}")
-    public void eliminar(@PathVariable Long id) {
+    public void eliminarProducto(@PathVariable Long id) {
+        productoRepository.deleteById(id);
+    }
 
-        repository.deleteById(id);
+    @PutMapping("/{id}")
+    public Producto actualizarProducto(@PathVariable Long id, @RequestBody Producto productoActualizado) {
+        return productoRepository.findById(id).map(p -> {
+            p.setNombre(productoActualizado.getNombre());
+            p.setDescripcion(productoActualizado.getDescripcion());
+            p.setPrecio(productoActualizado.getPrecio());
+            p.setCategoria(productoActualizado.getCategoria());
+            p.setStock(productoActualizado.getStock());
+            return productoRepository.save(p);
+        }).orElseGet(() -> {
+            productoActualizado.setId(id);
+            return productoRepository.save(productoActualizado);
+        });
     }
 }
