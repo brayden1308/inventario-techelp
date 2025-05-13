@@ -3,20 +3,23 @@ package com.teechhelp.inventario.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable()) // Opcional: desactiva CSRF si usas Postman o una API pública
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**", "/h2-console/**").permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
-                .headers(headers -> headers.frameOptions().disable());
+                .formLogin(form -> form
+                        .permitAll()
+                );
 
         return http.build();
     }
