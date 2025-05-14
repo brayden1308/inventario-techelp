@@ -8,7 +8,7 @@ public class DBConnectionTest {
     public static void main(String[] args) {
         String url = "jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:6543/postgres";
         String username = "postgres.qcezfxgazncaqynjuodc";
-        String password = "braydenvargas13*";
+        String password = "Emivargas1308";
 
         try {
             Class.forName("org.postgresql.Driver");
