@@ -3,12 +3,13 @@ package com.teechhelp.inventario.controller;
 import com.teechhelp.inventario.model.Producto;
 import com.teechhelp.inventario.repository.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 
-@CrossOrigin("*") // Permite llamadas desde cualquier frontend
+@CrossOrigin("*") // Permitir solicitudes desde cualquier origen (útil para pruebas)
 @RestController
 @RequestMapping("/api/productos")
 public class ProductoController {
@@ -16,27 +17,30 @@ public class ProductoController {
     @Autowired
     private ProductoRepository productoRepository;
 
-    // Obtener todos los productos
+    // ✅ Obtener todos los productos
     @GetMapping
     public List<Producto> obtenerProductos() {
         return productoRepository.findAll();
     }
 
-    // Obtener un producto por ID
+    // ✅ Obtener un producto por ID
     @GetMapping("/{id}")
-    public Producto obtenerProductoPorId(@PathVariable Long id) {
-        return productoRepository.findById(id).orElse(null);
+    public ResponseEntity<Producto> obtenerProductoPorId(@PathVariable Long id) {
+        return productoRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // Crear un nuevo producto
+    // ✅ Crear un nuevo producto y devolver el objeto guardado
     @PostMapping
-    public Producto crearProducto(@RequestBody Producto producto) {
-        return productoRepository.save(producto);
+    public ResponseEntity<Producto> crearProducto(@RequestBody Producto producto) {
+        Producto guardado = productoRepository.save(producto);
+        return ResponseEntity.ok(guardado); // ← Importante para que el frontend reciba respuesta válida
     }
 
-    // Actualizar un producto existente
+    // ✅ Actualizar producto existente
     @PutMapping("/{id}")
-    public Producto actualizarProducto(@PathVariable Long id, @RequestBody Producto productoActualizado) {
+    public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @RequestBody Producto productoActualizado) {
         Optional<Producto> productoOptional = productoRepository.findById(id);
         if (productoOptional.isPresent()) {
             Producto producto = productoOptional.get();
@@ -45,16 +49,21 @@ public class ProductoController {
             producto.setPrecio(productoActualizado.getPrecio());
             producto.setCategoria(productoActualizado.getCategoria());
             producto.setStock(productoActualizado.getStock());
-            return productoRepository.save(producto);
+            Producto actualizado = productoRepository.save(producto);
+            return ResponseEntity.ok(actualizado);
         } else {
-            // Retornar nulo o lanzar excepción personalizada si prefieres
-            return null;
+            return ResponseEntity.notFound().build();
         }
     }
 
-    // Eliminar un producto por ID
+    // ✅ Eliminar producto
     @DeleteMapping("/{id}")
-    public void eliminarProducto(@PathVariable Long id) {
-        productoRepository.deleteById(id);
+    public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
+        if (productoRepository.existsById(id)) {
+            productoRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
